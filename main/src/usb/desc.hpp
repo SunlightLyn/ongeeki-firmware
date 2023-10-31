@@ -89,7 +89,7 @@ namespace usb {
         ITF_NUM_HID = 0,
         ITF_NUM_CDC_0,
         ITF_NUM_CDC_0_DATA,
-        ITF_NUM_MSC,
+        // ITF_NUM_MSC,
 #ifdef LED_BOARD_ENABLE
         ITF_NUM_CDC_1,
         ITF_NUM_CDC_1_DATA,
@@ -103,7 +103,7 @@ namespace usb {
             TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, descriptor_length, 0x00, 100),
             TUD_HID_DESCRIPTOR(ITF_NUM_HID, 6, HID_ITF_PROTOCOL_NONE, sizeof(desc_hid_report),0x81, CFG_TUD_HID_EP_BUFSIZE, 1),
             TUD_CDC_DESCRIPTOR(ITF_NUM_CDC_0, 4, 0x84, 8, 0x02, 0x82, 64),
-            TUD_MSC_DESCRIPTOR(ITF_NUM_MSC, 7, 0x03, 0x83, 64),
+        //     TUD_MSC_DESCRIPTOR(ITF_NUM_MSC, 7, 0x03, 0x83, 64),
 #ifdef LED_BOARD_ENABLE
             TUD_CDC_DESCRIPTOR(ITF_NUM_CDC_1, 5, 0x86, 8, 0x05, 0x85, 64),
 #endif

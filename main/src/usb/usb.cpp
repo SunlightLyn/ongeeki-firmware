@@ -107,6 +107,7 @@ extern "C" {
         }
     }
 
+/*
     // Invoked when device is mounted
     void tud_mount_cb(void) {
     }
@@ -237,5 +238,6 @@ extern "C" {
 
         return resplen;
     }
+*/
 }
 // end region

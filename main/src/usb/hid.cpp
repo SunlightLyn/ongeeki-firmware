@@ -24,7 +24,7 @@ namespace usb {
         }
 
         void init() {
-            xTaskCreate(add_coin_task, "test_coin", 4096, nullptr, 5, &h_add_coin);
+            // xTaskCreate(add_coin_task, "test_coin", 4096, nullptr, 5, &h_add_coin);
 
             memset(&output_data, 0, sizeof(io4::output_t));
             output_data.system_status = 0x02;

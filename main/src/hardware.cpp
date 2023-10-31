@@ -9,7 +9,7 @@
 namespace hardware {
     const gpio_num_t gpio_settings[] = {
         // LA LB LC LS LM
-        GPIO_NUM_33, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_36, GPIO_NUM_37,
+        GPIO_NUM_13, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_36, GPIO_NUM_37,
         // RA RB RC RS RM
         GPIO_NUM_38, GPIO_NUM_39, GPIO_NUM_40, GPIO_NUM_41, GPIO_NUM_42,
     };
@@ -32,7 +32,7 @@ namespace hardware {
     };
 
     // see define of adc1_channel_t, the number below is not pin
-    const adc1_channel_t LEVER_PIN = ADC1_CHANNEL_0;
+    const adc1_channel_t LEVER_PIN = ADC1_CHANNEL_5;
 
     led_strip_t *led;
 
@@ -45,7 +45,7 @@ namespace hardware {
         adc1_config_width(ADC_WIDTH_BIT_13);
         adc1_config_channel_atten(LEVER_PIN, ADC_ATTEN_DB_11);
 
-        rmt_config_t config = RMT_DEFAULT_CONFIG_TX(GPIO_NUM_18, RMT_CHANNEL_0);
+        rmt_config_t config = RMT_DEFAULT_CONFIG_TX(GPIO_NUM_10, RMT_CHANNEL_0);
         config.clk_div = 2;
         rmt_config(&config);
         rmt_driver_install(config.channel, 0, 0);
@@ -62,6 +62,11 @@ namespace hardware {
         for(int i = 0; i < 10; i++) {
             auto& map = switch_maps[i];
             auto state = !gpio_get_level(gpio_settings[i]);
+
+            // if (i == 3 || i == 8)
+            // {
+            //     state = !state;
+            // }
 
             if(state) {
                 if(i == 0 || i == 7 || i == 4 || i == 9) {
@@ -97,9 +102,10 @@ namespace hardware {
         // https://kiritchatterjee.wordpress.com/2014/11/10/a-simple-digital-low-pass-filter-in-c/
         // since ESP32S2 has FPU then we just use float here
         static float smooth_lever = 0;
-        const float lpf_beta = 0.025f;
+        const float lpf_beta = 0.25f;
 
-        auto raw_lever = float(adc1_get_raw(LEVER_PIN) - 0x13FF) * 0x10;
+        // auto raw_lever = float(adc1_get_raw(LEVER_PIN) - 0x13FF) * 0x10;
+        auto raw_lever = float(adc1_get_raw(LEVER_PIN)) * 0x10;
         smooth_lever = smooth_lever - (lpf_beta * (smooth_lever - raw_lever));
 
         data.analog[0] = smooth_lever;
