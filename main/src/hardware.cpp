@@ -1,4 +1,5 @@
 #include "stdinclude.hpp"
+#include "pin_config.hpp"
 
 #include <driver/gpio.h>
 #include <driver/adc_common.h>
@@ -7,11 +8,23 @@
 #include <lwip/def.h>
 
 namespace hardware {
+    // Button and LED array:
+    // LA LB LC LS LM
+    // RA RB RC RS RM
+    
     const gpio_num_t gpio_settings[] = {
-        // LA LB LC LS LM
-        GPIO_NUM_13, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_36, GPIO_NUM_37,
-        // RA RB RC RS RM
-        GPIO_NUM_38, GPIO_NUM_39, GPIO_NUM_40, GPIO_NUM_41, GPIO_NUM_42,
+        PIN_BT_L1, PIN_BT_L2, PIN_BT_L3, PIN_BT_LS, PIN_BT_LM,
+        PIN_BT_R1, PIN_BT_R2, PIN_BT_R3, PIN_BT_RS, PIN_BT_RM,
+    };
+
+    const gpio_num_t led_settings[] = {
+        PIN_LED_L1, PIN_LED_L2, PIN_LED_L3, PIN_LED_LS, GPIO_NUM_NC,
+        PIN_LED_R1, PIN_LED_R2, PIN_LED_R3, PIN_LED_RS, GPIO_NUM_NC,
+    };
+
+    const uint32_t gpio_en_level[] = {
+        BT_EN, BT_EN, BT_EN, BT_SIDE_EN, BT_EN,
+        BT_EN, BT_EN, BT_EN, BT_SIDE_EN, BT_EN,
     };
 
     const switch_map_t switch_maps[] = {
@@ -31,21 +44,25 @@ namespace hardware {
         switch_map_t { .player = 0, .bit = 13 },
     };
 
-    // see define of adc1_channel_t, the number below is not pin
-    const adc1_channel_t LEVER_PIN = ADC1_CHANNEL_5;
+    const adc1_channel_t LEVER_PIN = PIN_LEVER;
 
     led_strip_t *led;
 
     void init() {
-        for(auto i = 0; i < 10; i++) {
+        for(int i = 0; i < 10; i++) {
             gpio_set_direction(gpio_settings[i], GPIO_MODE_INPUT);
             gpio_set_pull_mode(gpio_settings[i], GPIO_PULLUP_ONLY);
+        }
+
+        for(int i = 0; i < 10; i++) {
+            gpio_set_direction(led_settings[i], GPIO_MODE_OUTPUT);
+            gpio_set_level(led_settings[i], !LED_EN);
         }
 
         adc1_config_width(ADC_WIDTH_BIT_13);
         adc1_config_channel_atten(LEVER_PIN, ADC_ATTEN_DB_11);
 
-        rmt_config_t config = RMT_DEFAULT_CONFIG_TX(GPIO_NUM_10, RMT_CHANNEL_0);
+        rmt_config_t config = RMT_DEFAULT_CONFIG_TX(PIN_RGB_LED, RMT_CHANNEL_0);
         config.clk_div = 2;
         rmt_config(&config);
         rmt_driver_install(config.channel, 0, 0);
@@ -63,11 +80,6 @@ namespace hardware {
             auto& map = switch_maps[i];
             auto state = !gpio_get_level(gpio_settings[i]);
 
-            // if (i == 3 || i == 8)
-            // {
-            //     state = !state;
-            // }
-
             if(state) {
                 if(i == 0 || i == 7 || i == 4 || i == 9) {
                     test_sum ++;
@@ -77,6 +89,8 @@ namespace hardware {
             } else {
                 data.switches[map.player] &= ~(1 << map.bit);
             }
+
+            gpio_set_level(led_settings[i], (state == gpio_en_level[i]) == LED_EN);
         }
 
         static bool is_inserted_coin = false;
